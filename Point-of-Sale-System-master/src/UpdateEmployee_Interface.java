@@ -86,7 +86,6 @@ public class UpdateEmployee_Interface extends JFrame implements ActionListener
 		
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void actionPerformed(ActionEvent event)
 	{
 		
@@ -95,7 +94,7 @@ public class UpdateEmployee_Interface extends JFrame implements ActionListener
 			{
 				EmployeeManagement management = new EmployeeManagement();
 				
-				int result = management.update(username.getText(), password.getText(), position.getText(), name.getText());
+				int result = management.update(username.getText(), new String(password.getPassword()), position.getText(), name.getText());
 				
 				if (result == -1)
 					JOptionPane.showMessageDialog(null, "Employee with such username doesn't exist");

@@ -1,0 +1,23 @@
+@startuml
+' Basic class diagram for core domain (legacy)
+class PointOfSale {
+  +double getTotal()
+  +void addItem(Item)
+}
+class POS
+class POR
+class POH
+class Item {
+  +int getId()
+  +String getName()
+}
+class Employee
+class Inventory
+PointOfSale <|-- POS
+PointOfSale <|-- POR
+PointOfSale <|-- POH
+Inventory "1" *-- "*" Item
+Employee -- Inventory : manages
+InvoiceItem --> Item
+Invoice --> InvoiceItem
+@enduml

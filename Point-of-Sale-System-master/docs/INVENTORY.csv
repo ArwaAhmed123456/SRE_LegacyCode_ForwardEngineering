@@ -1,0 +1,29 @@
+path,type,notes
+.project,project-file,NetBeans project file
+nbproject/,folder,NetBeans project metadata and build properties
+build.xml,ant-build,Ant build file that imports nbproject/build-impl.xml
+src/,folder,Java source files (legacy Swing POS)
+bin/,folder,Compiled .class files (should be removed from repo)
+Database/,folder,Legacy plain-text data files (employeeDatabase.txt, itemDatabase.txt, etc.)
+db/schema.sql,sql,SQLite schema provided
+db/migrate.py,script,Python migration script (txt -> SQLite)
+scripts/migrate_to_mongo.py,script,Python migration script (txt -> MongoDB)
+README.txt,doc,Project overview and alpha release notes
+JAVA_21_UPGRADE_SUMMARY.md,doc,Upgrade notes for Java 21
+UPGRADE_COMPLETE.md,doc,Upgrade summary
+GIT_PUSH_SUMMARY.md,doc,Git push summary
+DEPLOYMENT_COMPLETE.md,doc,Deployment report
+tests/,folder,JUnit tests (requires junit on classpath)
+backend/,folder,Scaffolded Spring Boot backend (added)
+scripts/,folder,Migration scripts and requirements.txt
+Documentation/,folder,Original project documentation
+db/pos.db,sqlite,(optional) SQLite DB created by migration (not committed)
+SGTechnologies.jar,jar,Compiled executable jar (deliverable)
+.gitignore,gitignore,ignore file (to create - not fully present)
+manifest.mf,manifest,jar manifest
+src.zip,zip,source archive
+src/DBHelper.java,source,DBHelper that integrates with SQLite (note)
+Database/employeeDatabase.txt,data,legacy employee records
+Database/itemDatabase.txt,data,legacy item records
+Database/rentalDatabase.txt,data,legacy rental records
+Database/saleInvoiceRecord.txt,data,legacy invoice records
