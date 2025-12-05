@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Point of Sale System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: auto; }
+        .button { padding: 10px 20px; margin: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Point of Sale System</h1>
+        <p>Select your role to continue:</p>
+        <a href="/login" class="button">Login</a>
+        <a href="/cashier" class="button">Cashier</a>
+        <a href="/admin" class="button">Admin</a>
+    </div>
+</body>
+</html>
