@@ -117,9 +117,8 @@ public class Management {
      returnList.add(returnItem);
      
     } 
-                 catch (ParseException e) {
-     // TODO Auto-generated catch block
-     e.printStackTrace();
+           catch (ParseException e) {
+     System.err.println("Failed to parse return date: " + thisReturnDate + " — " + e.getMessage());
     }
                  
                  
