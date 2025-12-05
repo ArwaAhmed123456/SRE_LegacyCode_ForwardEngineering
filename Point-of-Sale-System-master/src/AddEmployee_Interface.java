@@ -68,12 +68,11 @@ public class AddEmployee_Interface extends JFrame implements ActionListener
 		exitButton.addActionListener(this);
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void actionPerformed(ActionEvent event)
 	{
 		if (event.getSource() == enterButton)
 		{
-			management.add(name.getText(),password.getText(),registeringCashier);
+			management.add(name.getText(),new String(password.getPassword()),registeringCashier);
 			admin.setVisible(false);
 			admin.dispose();
 			

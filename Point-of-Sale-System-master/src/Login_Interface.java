@@ -71,13 +71,12 @@ public class Login_Interface extends JFrame implements ActionListener{
 		//handler for login
 		//private class LoginHandler implements ActionListener{
 			
-			@SuppressWarnings("deprecation")
 			public void actionPerformed(ActionEvent event)
 			{
 				//Once login button is clicked, get username and password from both fields
-				if (event.getSource() == loginButton) {
-					userAuth = username.getText();
-					passwordAuth = password.getText();
+			if (event.getSource() == loginButton) {
+				userAuth = username.getText();
+				passwordAuth = new String(password.getPassword());
 					if (System.logIn(userAuth, passwordAuth) == 1)		//Enters the system as cashier
 					{
 						//Starts the cashier interface
