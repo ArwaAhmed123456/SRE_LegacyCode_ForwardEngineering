@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customer Details - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Customer Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user"></i> Customer Information
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'customer_update' customer.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'customer_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Name:</dt>
+                                <dd class="col-sm-8">{{ customer.name }}</dd>
+
+                                <dt class="col-sm-4">Phone:</dt>
+                                <dd class="col-sm-8">{{ customer.phone }}</dd>
+
+                                <dt class="col-sm-4">Email:</dt>
+                                <dd class="col-sm-8">{{ customer.email|default:"Not provided" }}</dd>
+
+                                <dt class="col-sm-4">Status:</dt>
+                                <dd class="col-sm-8">
+                                    {% if customer.is_active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Total Rentals:</dt>
+                                <dd class="col-sm-8">{{ customer.total_rentals }}</dd>
+
+                                <dt class="col-sm-4">Total Value:</dt>
+                                <dd class="col-sm-8">${{ customer.total_rental_value }}</dd>
+
+                                <dt class="col-sm-4">Last Rental:</dt>
+                                <dd class="col-sm-8">
+                                    {% if customer.last_rental_date %}
+                                        {{ customer.last_rental_date|date:"M d, Y H:i" }}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </dd>
+
+                                <dt class="col-sm-4">Date of Birth:</dt>
+                                <dd class="col-sm-8">
+                                    {% if customer.date_of_birth %}
+                                        {{ customer.date_of_birth|date:"M d, Y" }}
+                                    {% else %}
+                                        Not provided
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    {% if customer.address %}
+                    <div class="row">
+                        <div class="col-12">
+                            <dt>Address:</dt>
+                            <dd>{{ customer.address|linebreaks }}</dd>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if customer.notes %}
+                    <div class="row">
+                        <div class="col-12">
+                            <dt>Notes:</dt>
+                            <dd>{{ customer.notes|linebreaks }}</dd>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Active Rentals -->
+            {% if active_rentals %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clock"></i> Active Rentals
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Rental #</th>
+                                    <th>Items</th>
+                                    <th>Due Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rental in active_rentals %}
+                                <tr>
+                                    <td>{{ rental.rental_number }}</td>
+                                    <td>{{ rental.rental_items.count }} items</td>
+                                    <td>{{ rental.due_date|date:"M d, Y" }}</td>
+                                    <td>${{ rental.total }}</td>
+                                    <td>
+                                        <span class="badge badge-warning">{{ rental.get_rental_status_display }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Overdue Rentals -->
+            {% if overdue_rentals %}
+            <div class="card mt-3">
+                <div class="card-header bg-danger">
+                    <h3 class="card-title text-white">
+                        <i class="fas fa-exclamation-triangle"></i> Overdue Rentals
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Rental #</th>
+                                    <th>Items</th>
+                                    <th>Due Date</th>
+                                    <th>Days Overdue</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rental in overdue_rentals %}
+                                <tr>
+                                    <td>{{ rental.rental_number }}</td>
+                                    <td>{{ rental.rental_items.count }} items</td>
+                                    <td>{{ rental.due_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% load tz %}
+                                        {% timezone "UTC" %}
+                                        {% with days_overdue=rental.due_date|timesince %}
+                                        {{ days_overdue|slice:":2" }} days
+                                        {% endwith %}
+                                        {% endtimezone %}
+                                    </td>
+                                    <td>${{ rental.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary btn-block mb-2" onclick="createRental()">
+                        <i class="fas fa-plus"></i> Create Rental
+                    </a>
+                    <a href="#" class="btn btn-info btn-block mb-2" onclick="viewHistory()">
+                        <i class="fas fa-history"></i> View Full History
+                    </a>
+                    <a href="#" class="btn btn-warning btn-block" onclick="sendMessage()">
+                        <i class="fas fa-envelope"></i> Send Message
+                    </a>
+                </div>
+            </div>
+
+            <!-- Rental History Summary -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i> Rental Summary
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="h4 mb-0">{{ customer.total_rentals }}</div>
+                            <small class="text-muted">Total Rentals</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="h4 mb-0">${{ customer.total_rental_value }}</div>
+                            <small class="text-muted">Total Value</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function createRental() {
+    // Redirect to rental creation with customer pre-selected
+    window.location.href = "{% url 'rental_create' %}?customer={{ customer.pk }}";
+}
+
+function viewHistory() {
+    // Show full rental history (could be a modal or separate page)
+    alert('Full rental history feature coming soon!');
+}
+
+function sendMessage() {
+    // Send SMS or email to customer
+    alert('Messaging feature coming soon!');
+}
+</script>
+{% endblock %}

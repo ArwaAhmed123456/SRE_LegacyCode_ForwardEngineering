@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - POS System{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Overview of your store performance{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'sale_create' %}" class="btn btn-primary">
+    <i class="fas fa-cash-register me-2"></i> New Sale
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Stats Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Today's Revenue
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            ${{ today_total|floatformat:2 }}
+                        </div>
+                        <div class="mt-2 mb-0 text-muted text-xs">
+                            <span class="text-success mr-2">
+                                <i class="fas fa-shopping-cart"></i> {{ today_count }} sales
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Month Revenue
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            ${{ month_total|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Inventory Status
+                        </div>
+                        <div class="row no-gutters align-items-center">
+                            <div class="col-auto">
+                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                                    {{ total_products }} products
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2 mb-0 text-muted text-xs">
+                            <span class="text-warning mr-2">
+                                <i class="fas fa-exclamation-triangle"></i> {{ low_stock_count }} low stock
+                            </span>
+                            <span class="text-danger">
+                                <i class="fas fa-times"></i> {{ out_of_stock_count }} out of stock
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Customers
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ total_customers }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Sales -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Recent Sales</h6>
+                <a href="{% url 'sale_list' %}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Payment</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in recent_sales %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'sale_detail' sale.id %}" class="text-decoration-none">
+                                        {{ sale.invoice_number }}
+                                    </a>
+                                </td>
+                                <td>{{ sale.customer_name|default:"Walk-in Customer" }}</td>
+                                <td class="font-weight-bold">${{ sale.total|floatformat:2 }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ sale.get_payment_method_display }}</span>
+                                </td>
+                                <td>{{ sale.sale_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if sale.sale_status == 'COMPLETED' %}success{% else %}warning{% endif %}">
+                                        {{ sale.get_sale_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-shopping-cart fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted">No sales yet</p>
+                                    <a href="{% url 'sale_create' %}" class="btn btn-primary">
+                                        Create First Sale
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Low Stock Alert
+                </h6>
+                <a href="{% url 'product_list' %}?low_stock=true" class="btn btn-sm btn-warning">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for product in low_stock_products %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ product.name }}</h6>
+                                <small class="text-muted">{{ product.category.name|default:"No Category" }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-warning mb-1">{{ product.quantity }} left</span>
+                                <div>
+                                    <small class="text-muted">Reorder: {{ product.min_stock_level }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                        <p class="text-muted">All products are well stocked</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Top Selling Products</h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for product in top_products %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">{{ product.product__name }}</h6>
+                                <small class="text-muted">Sold: {{ product.quantity_sold }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="font-weight-bold">${{ product.revenue|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No sales data yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

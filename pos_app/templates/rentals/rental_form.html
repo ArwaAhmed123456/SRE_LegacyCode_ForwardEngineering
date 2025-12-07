@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if object %}Edit Rental{% else %}Create Rental{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{% if object %}Edit Rental{% else %}Create New Rental{% endif %}</h3>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.customer_name.id_for_label }}">Customer Name *</label>
+                                    {{ form.customer_name }}
+                                    {% if form.customer_name.errors %}
+                                        <div class="text-danger">{{ form.customer_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.customer_phone.id_for_label }}">Phone</label>
+                                    {{ form.customer_phone }}
+                                    {% if form.customer_phone.errors %}
+                                        <div class="text-danger">{{ form.customer_phone.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.customer_email.id_for_label }}">Email</label>
+                                    {{ form.customer_email }}
+                                    {% if form.customer_email.errors %}
+                                        <div class="text-danger">{{ form.customer_email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.due_date.id_for_label }}">Due Date *</label>
+                                    {{ form.due_date }}
+                                    {% if form.due_date.errors %}
+                                        <div class="text-danger">{{ form.due_date.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.customer_address.id_for_label }}">Address</label>
+                            {{ form.customer_address }}
+                            {% if form.customer_address.errors %}
+                                <div class="text-danger">{{ form.customer_address.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.tax_rate.id_for_label }}">Tax Rate (%)</label>
+                                    {{ form.tax_rate }}
+                                    {% if form.tax_rate.errors %}
+                                        <div class="text-danger">{{ form.tax_rate.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.discount_percentage.id_for_label }}">Discount (%)</label>
+                                    {{ form.discount_percentage }}
+                                    {% if form.discount_percentage.errors %}
+                                        <div class="text-danger">{{ form.discount_percentage.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.notes.id_for_label }}">Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {% if object %}Update{% else %}Create{% endif %} Rental
+                        </button>
+                        <a href="{% url 'rentals:rental_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

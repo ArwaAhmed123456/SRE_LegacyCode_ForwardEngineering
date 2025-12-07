@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Category{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirm Category Deletion
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-4">Are you sure you want to delete the following category?</p>
+
+                <div class="alert alert-warning">
+                    <strong>Category Details:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li><strong>Name:</strong> {{ category.name }}</li>
+                        <li><strong>Description:</strong> {{ category.description|default:"N/A" }}</li>
+                        <li><strong>Products Count:</strong> {{ category.products.count }}</li>
+                    </ul>
+                </div>
+
+                {% if category.products.exists %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-warning me-2"></i>
+                    <strong>Warning:</strong> This category contains {{ category.products.count }} product(s).
+                    Deleting this category will remove it from all associated products.
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Yes, Delete Category
+                        </button>
+                        <a href="{% url 'category_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

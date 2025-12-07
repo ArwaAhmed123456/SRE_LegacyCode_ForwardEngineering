@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS Home</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .home-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        h1 { color: #333; }
+        .role-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .role-buttons a { padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+        .role-buttons a:hover { background-color: #0056b3; }
+        .logout { margin-top: 20px; }
+        .logout a { color: #dc3545; text-decoration: none; }
+        .logout a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <h1>Welcome to POS System</h1>
+        <p>Hello, {{ user.first_name }} {{ user.last_name }}!</p>
+        <div class="role-buttons">
+            {% if user.role == 'admin' %}
+                <a href="{% url 'admin' %}">Admin Panel</a>
+            {% elif user.role == 'cashier' %}
+                <a href="{% url 'cashier' %}">Cashier</a>
+            {% endif %}
+        </div>
+        <div class="logout">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Coupon{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Delete Coupon</h3>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to delete the coupon <strong>{{ coupon.code }}</strong>?</p>
+                    <p>This action cannot be undone.</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete Coupon</button>
+                        <a href="{% url 'coupon_list' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

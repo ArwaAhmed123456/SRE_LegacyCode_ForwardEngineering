@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generate Coupons{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-magic"></i> Generate Multiple Coupons
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'coupon_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Coupons
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Information Alert -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Legacy System Compatibility:</strong> This feature generates coupons in the same format as the original Java POS system (C001-C200 with 20% discount).
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="start_code">Starting Code *</label>
+                                    <input type="text" name="start_code" id="start_code" class="form-control"
+                                           placeholder="e.g., C001" value="C001" required
+                                           pattern="[A-Za-z]+\d+" title="Format: Letters followed by numbers (e.g., C001)">
+                                    <small class="form-text text-muted">
+                                        Format: Letters + Numbers (e.g., C001, DISC001)
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="count">Number of Coupons *</label>
+                                    <input type="number" name="count" id="count" class="form-control"
+                                           min="1" max="1000" value="200" required>
+                                    <small class="form-text text-muted">
+                                        Maximum 1000 coupons at once
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="discount_percentage">Discount Percentage *</label>
+                            <div class="input-group">
+                                <input type="number" name="discount_percentage" id="discount_percentage"
+                                       class="form-control" min="0" max="100" step="0.01" value="20.00" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">
+                                Default 20% matches legacy system
+                            </small>
+                        </div>
+
+                        <!-- Preview Section -->
+                        <div class="card border-primary mt-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-eye"></i> Preview
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Code Range:</strong>
+                                        <div id="codeRange">C001 - C200</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Discount:</strong>
+                                        <div id="discountPreview">20.00%</div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <strong>Sample Codes:</strong>
+                                        <div id="sampleCodes" class="text-muted small">
+                                            C001, C002, C003, C004, C005...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-magic"></i> Generate Coupons
+                            </button>
+                            <a href="{% url 'coupon_list' %}" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Generations -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history"></i> Recent Coupon Generations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Code Range</th>
+                                    <th>Count</th>
+                                    <th>Discount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- This would be populated from a log table in a real implementation -->
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">
+                                        <em>No recent generations</em>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startCodeInput = document.getElementById('start_code');
+    const countInput = document.getElementById('count');
+    const discountInput = document.getElementById('discount_percentage');
+
+    function updatePreview() {
+        const startCode = startCodeInput.value;
+        const count = parseInt(countInput.value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
+
+        // Update code range
+        const match = startCode.match(/^([A-Za-z]+)(\d+)$/);
+        if (match) {
+            const prefix = match[1];
+            const startNum = parseInt(match[2]);
+            const endNum = startNum + count - 1;
+            const endCode = prefix + endNum.toString().padStart(match[2].length, '0');
+
+            document.getElementById('codeRange').textContent = `${startCode} - ${endCode}`;
+        }
+
+        // Update discount preview
+        document.getElementById('discountPreview').textContent = discount.toFixed(2) + '%';
+
+        // Update sample codes
+        if (match) {
+            const prefix = match[1];
+            const startNum = parseInt(match[2]);
+            const samples = [];
+            for (let i = 0; i < Math.min(5, count); i++) {
+                const num = startNum + i;
+                const code = prefix + num.toString().padStart(match[2].length, '0');
+                samples.push(code);
+            }
+            if (count > 5) {
+                samples.push('...');
+            }
+            document.getElementById('sampleCodes').textContent = samples.join(', ');
+        }
+    }
+
+    // Update preview on input changes
+    startCodeInput.addEventListener('input', updatePreview);
+    countInput.addEventListener('input', updatePreview);
+    discountInput.addEventListener('input', updatePreview);
+
+    // Initial preview update
+    updatePreview();
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const startCode = startCodeInput.value;
+        const count = parseInt(countInput.value);
+
+        if (!startCode.match(/^[A-Za-z]+\d+$/)) {
+            e.preventDefault();
+            alert('Invalid code format. Use letters followed by numbers (e.g., C001)');
+            return;
+        }
+
+        if (count < 1 || count > 1000) {
+            e.preventDefault();
+            alert('Number of coupons must be between 1 and 1000');
+            return;
+        }
+
+        if (!confirm(`Generate ${count} coupons starting from ${startCode}?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

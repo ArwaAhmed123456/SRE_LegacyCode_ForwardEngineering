@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Process Return - Sale #{{ sale.invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-undo"></i> Process Return - Sale #{{ sale.invoice_number }}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Sale
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Sale Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Sale Information</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Sale Date:</dt>
+                                <dd class="col-sm-8">{{ sale.date|date:"M d, Y H:i" }}</dd>
+
+                                <dt class="col-sm-4">Employee:</dt>
+                                <dd class="col-sm-8">{{ sale.employee.get_full_name }}</dd>
+
+                                <dt class="col-sm-4">Total Amount:</dt>
+                                <dd class="col-sm-8">${{ sale.total }}</dd>
+
+                                <dt class="col-sm-4">Payment Status:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge badge-{{ sale.payment_status|lower }}">{{ sale.get_payment_status_display }}</span>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Return Information</h5>
+                            <form method="post" id="returnForm">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="return_type">Return Type *</label>
+                                    <select name="return_type" id="return_type" class="form-control" required>
+                                        <option value="sale">Sale Return</option>
+                                        <option value="rental">Rental Return</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="return_reason">Return Reason *</label>
+                                    <select name="return_reason" id="return_reason" class="form-control" required>
+                                        <option value="">Select Reason</option>
+                                        <option value="DEFECTIVE">Defective Item</option>
+                                        <option value="WRONG_ITEM">Wrong Item</option>
+                                        <option value="CUSTOMER_CHANGE_MIND">Customer Changed Mind</option>
+                                        <option value="DAMAGED">Damaged</option>
+                                        <option value="EXPIRED">Expired</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Items Selection -->
+                    <h5>Select Items to Return</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="5%">
+                                        <input type="checkbox" id="selectAll" class="form-check-input">
+                                        <label class="form-check-label" for="selectAll">All</label>
+                                    </th>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Quantity Purchased</th>
+                                    <th>Unit Price</th>
+                                    <th>Return Quantity</th>
+                                    <th>Return Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in sale_items %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="return_items" value="{{ item.pk }}"
+                                               class="form-check-input return-item-checkbox">
+                                    </td>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.product.sku }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.unit_price }}</td>
+                                    <td>
+                                        <input type="number" name="quantity_{{ item.pk }}"
+                                               class="form-control form-control-sm return-quantity"
+                                               min="0" max="{{ item.quantity }}" value="0"
+                                               data-unit-price="{{ item.unit_price }}">
+                                    </td>
+                                    <td>
+                                        <span class="return-amount">$0.00</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="font-weight-bold">
+                                    <td colspan="6" class="text-right">Total Refund:</td>
+                                    <td><span id="totalRefund" class="text-success">$0.00</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Return Summary -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Return Summary
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Items Selected:</strong>
+                                            <div id="itemsSelected">0</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>Total Quantity:</strong>
+                                            <div id="totalQuantity">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-white">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-exclamation-triangle"></i> Important Notes
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="mb-0 small">
+                                        <li>Returned items will be added back to inventory</li>
+                                        <li>Refund will be processed as a negative payment</li>
+                                        <li>Return record will be created for tracking</li>
+                                        <li>Original sale will remain in system</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-4">
+                        <button type="submit" form="returnForm" class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> Process Return
+                        </button>
+                        <a href="{% url 'sale_detail' sale.pk %}" class="btn btn-secondary btn-lg ml-2">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const itemCheckboxes = document.querySelectorAll('.return-item-checkbox');
+    const quantityInputs = document.querySelectorAll('.return-quantity');
+    const returnForm = document.getElementById('returnForm');
+
+    // Select All functionality
+    selectAllCheckbox.addEventListener('change', function() {
+        itemCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+            updateQuantityField(checkbox);
+        });
+        updateSummary();
+    });
+
+    // Individual checkbox change
+    itemCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateQuantityField(this);
+            updateSelectAllState();
+            updateSummary();
+        });
+    });
+
+    // Quantity input change
+    quantityInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            updateItemAmount(this);
+            updateSummary();
+        });
+    });
+
+    function updateQuantityField(checkbox) {
+        const row = checkbox.closest('tr');
+        const quantityInput = row.querySelector('.return-quantity');
+
+        if (checkbox.checked) {
+            // Set to full quantity if not already set
+            if (parseInt(quantityInput.value) === 0) {
+                const maxQuantity = parseInt(quantityInput.getAttribute('max'));
+                quantityInput.value = maxQuantity;
+                updateItemAmount(quantityInput);
+            }
+            quantityInput.disabled = false;
+        } else {
+            quantityInput.value = 0;
+            updateItemAmount(quantityInput);
+            quantityInput.disabled = true;
+        }
+    }
+
+    function updateItemAmount(quantityInput) {
+        const row = quantityInput.closest('tr');
+        const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
+        const quantity = parseInt(quantityInput.value) || 0;
+        const amount = unitPrice * quantity;
+        const amountSpan = row.querySelector('.return-amount');
+
+        amountSpan.textContent = '$' + amount.toFixed(2);
+    }
+
+    function updateSelectAllState() {
+        const checkedCount = document.querySelectorAll('.return-item-checkbox:checked').length;
+        const totalCount = itemCheckboxes.length;
+
+        selectAllCheckbox.checked = checkedCount === totalCount;
+        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < totalCount;
+    }
+
+    function updateSummary() {
+        let totalRefund = 0;
+        let itemsSelected = 0;
+        let totalQuantity = 0;
+
+        itemCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                itemsSelected++;
+                const row = checkbox.closest('tr');
+                const quantityInput = row.querySelector('.return-quantity');
+                const quantity = parseInt(quantityInput.value) || 0;
+                const unitPrice = parseFloat(quantityInput.getAttribute('data-unit-price'));
+
+                totalQuantity += quantity;
+                totalRefund += unitPrice * quantity;
+            }
+        });
+
+        document.getElementById('totalRefund').textContent = '$' + totalRefund.toFixed(2);
+        document.getElementById('itemsSelected').textContent = itemsSelected;
+        document.getElementById('totalQuantity').textContent = totalQuantity;
+    }
+
+    // Form submission
+    returnForm.addEventListener('submit', function(e) {
+        const selectedItems = document.querySelectorAll('.return-item-checkbox:checked');
+
+        if (selectedItems.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one item to return.');
+            return;
+        }
+
+        let hasValidQuantity = false;
+        selectedItems.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const quantityInput = row.querySelector('.return-quantity');
+            const quantity = parseInt(quantityInput.value) || 0;
+
+            if (quantity > 0) {
+                hasValidQuantity = true;
+            }
+        });
+
+        if (!hasValidQuantity) {
+            e.preventDefault();
+            alert('Please specify return quantities for selected items.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to process this return? This action cannot be undone.')) {
+            e.preventDefault();
+        }
+    });
+
+    // Initialize
+    updateSummary();
+});
+</script>
+{% endblock %}

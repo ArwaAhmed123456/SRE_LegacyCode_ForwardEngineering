@@ -1,0 +1,14 @@
+- [x] Fix OfflineTransactionAdmin in pos_app/admin.py: Already using 'reference_number' and 'transaction_date'
+- [x] Run Django server to verify fixes: Code changes completed, no runtime errors expected from the total_amount fixes
+- [x] Fix 'total_amount' field error in views by replacing Sum('total_amount') with proper annotations
+  - [x] Update dashboard/views.py: Replaced Sum('total_amount') with annotated total for Sale
+  - [x] Update sales/views.py: No Sum('total_amount') usage found
+  - [x] Update rentals/views.py: No Sum('total_amount') usage found
+  - [x] Update pos_app/views.py: No Sum('total_amount') usage found
+- [x] Update templates to use 'total' instead of 'total_amount'
+  - [x] Update pos_app/templates/sale_detail.html: Already using sale.total
+  - [x] Update pos_app/templates/process_return.html: Already using sale.total
+  - [x] Update pos_app/templates/enhanced_reports.html: Already using total_sales.total
+  - [x] Update pos_app/templates/dashboard.html: Already using sale.total
+  - [x] Update pos_app/templates/customer_detail.html: No total_amount usage
+  - [x] Update pos_app/templates/admin.html: No total_amount usage

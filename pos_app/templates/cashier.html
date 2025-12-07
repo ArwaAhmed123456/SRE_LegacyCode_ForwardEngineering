@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Cashier{% endblock %}
+
+{% block content %}
+<h1>Cashier</h1>
+
+<div class="products">
+    <h2>Products</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        {% for product in products %}
+            <div class="product" style="border: 1px solid #ccc; padding: 10px; border-radius: 4px; width: 200px;">
+                <h3>{{ product.name }}</h3>
+                <p>Price: ${{ product.price }}</p>
+                <p>Stock: {{ product.quantity }}</p>
+                {% if product.is_low_stock %}
+                    <p style="color: red;">Low Stock!</p>
+                {% endif %}
+                <form method="post" action="{% url 'add_to_cart' product.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" min="1" max="{{ product.quantity }}" value="1" required>
+                    <button type="submit" class="btn">Add to Cart</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="cart">
+    <h2>Cart</h2>
+    {% if cart_items %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.product.price }}</td>
+                        <td>${{ item.subtotal }}</td>
+                        <td><a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-danger">Remove</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p><strong>Total: ${{ total }}</strong></p>
+        <form method="post" action="{% url 'checkout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">Checkout</button>
+        </form>
+    {% else %}
+        <p>Cart is empty</p>
+    {% endif %}
+</div>
+{% endblock %}

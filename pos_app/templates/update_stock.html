@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load json_script %}  {# make sure to load json_script tag #}
+
+{% block title %}Update Stock - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-boxes"></i> Update Stock - {{ product.name }}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'product_detail' product.pk %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Product
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Current Stock Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="card-title mb-0">Current Stock Status</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-6">
+                                            <h4 class="text-primary">{{ product.quantity }}</h4>
+                                            <small class="text-muted">Current Stock</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <h4 class="text-warning">{{ product.min_stock_level }}</h4>
+                                            <small class="text-muted">Min Level</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="card-title mb-0">Stock Value</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h4 class="text-success">${{ product.get_stock_value|floatformat:2 }}</h4>
+                                    <small class="text-muted">Total Value</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stock Update Form -->
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="movement_type">Movement Type *</label>
+                                    <select name="movement_type" id="movement_type" class="form-control" required>
+                                        <option value="ADJUSTMENT">Stock Adjustment</option>
+                                        <option value="PURCHASE">Purchase</option>
+                                        <option value="SALE">Sale</option>
+                                        <option value="RETURN">Return</option>
+                                        <option value="DAMAGE">Damage</option>
+                                        <option value="TRANSFER">Transfer</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="quantity_change">Quantity Change *</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <label class="mb-0 mr-2">
+                                                    <input type="radio" name="operation" value="add" checked> +
+                                                </label>
+                                                <label class="mb-0 ml-2">
+                                                    <input type="radio" name="operation" value="subtract"> -
+                                                </label>
+                                            </span>
+                                        </div>
+                                        <input type="number" name="quantity_change" id="quantity_change"
+                                               class="form-control" min="0" step="1" required>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">units</span>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        Enter positive number. Use +/- to add or subtract.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Notes</label>
+                            <textarea name="notes" id="notes" class="form-control" rows="3"
+                                      placeholder="Optional notes about this stock change..."></textarea>
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="card border-primary mt-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="card-title mb-0">
+                                    <i class="fas fa-eye"></i> Preview Changes
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <strong>Current Stock:</strong>
+                                        <div>{{ product.quantity }} units</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Change:</strong>
+                                        <div id="changePreview">+ 0 units</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>New Stock:</strong>
+                                        <div id="newStockPreview">{{ product.quantity }} units</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> Update Stock
+                            </button>
+                            <a href="{% url 'product_detail' product.pk %}" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Stock Movements -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history"></i> Recent Stock Movements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Change</th>
+                                    <th>New Total</th>
+                                    <th>User</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movement in product.stock_movements.all|slice:":10" %}
+                                <tr>
+                                    <td>{{ movement.created_at|date:"M d, H:i" }}</td>
+                                    <td>
+                                        <span class="badge badge-secondary">{{ movement.get_movement_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="{% if movement.quantity_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                                            {{ movement.quantity_change|floatformat:0 }}
+                                        </span>
+                                    </td>
+                                    <td>{{ movement.new_quantity }}</td>
+                                    <td>{{ movement.user.get_full_name|default:"System" }}</td>
+                                    <td>{{ movement.notes|truncatechars:30|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        <em>No stock movements yet</em>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Safely pass currentStock to JS #}
+{{ product.quantity|default:0|json_script:"currentStock" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.getElementById('quantity_change');
+    const operationRadios = document.querySelectorAll('input[name="operation"]');
+    const currentStock = JSON.parse(document.getElementById('currentStock').textContent);
+
+    function updatePreview() {
+        const quantity = parseInt(quantityInput.value) || 0;
+        const operation = document.querySelector('input[name="operation"]:checked').value;
+
+        let change = quantity;
+        if (operation === 'subtract') {
+            change = -quantity;
+        }
+
+        const newStock = currentStock + change;
+
+        // Update preview
+        const changePreview = document.getElementById('changePreview');
+        changePreview.textContent = (change >= 0 ? '+' : '') + change + ' units';
+        changePreview.className = change >= 0 ? 'text-success' : 'text-danger';
+
+        document.getElementById('newStockPreview').textContent = newStock + ' units';
+
+        // Warning for negative stock
+        const previewCard = document.querySelector('.card.border-primary');
+        const warningDiv = previewCard.querySelector('.alert-warning');
+
+        if (newStock < 0) {
+            if (!warningDiv) {
+                const warning = document.createElement('div');
+                warning.className = 'alert alert-warning mt-2';
+                warning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Warning: This will result in negative stock!';
+                previewCard.appendChild(warning);
+            }
+        } else {
+            if (warningDiv) {
+                warningDiv.remove();
+            }
+        }
+    }
+
+    quantityInput.addEventListener('input', updatePreview);
+    operationRadios.forEach(radio => {
+        radio.addEventListener('change', updatePreview);
+    });
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const quantity = parseInt(quantityInput.value);
+        const operation = document.querySelector('input[name="operation"]:checked').value;
+        const movementType = document.getElementById('movement_type').value;
+
+        if (!quantity || quantity < 0) {
+            e.preventDefault();
+            alert('Please enter a valid quantity (positive number)');
+            return;
+        }
+
+        let change = quantity;
+        if (operation === 'subtract') {
+            change = -quantity;
+        }
+
+        const newStock = currentStock + change;
+
+        if (newStock < 0 && !confirm('This will result in negative stock. Are you sure?')) {
+            e.preventDefault();
+            return;
+        }
+
+        if (!confirm(`Update stock by ${change >= 0 ? '+' : ''}${change} units (${movementType})?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}
